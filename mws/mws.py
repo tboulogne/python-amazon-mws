@@ -327,6 +327,8 @@ class Reports(MWS):
         data = dict(Action='GetReport', ReportId=report_id)
         return self.make_request(data)
 
+
+
     def get_report_count(self, report_types=(), acknowledged=None, fromdate=None, todate=None):
         data = dict(Action='GetReportCount',
                     Acknowledged=acknowledged,
@@ -345,6 +347,23 @@ class Reports(MWS):
         data.update(self.enumerate_param('ReportRequestIdList.Id.', requestids))
         data.update(self.enumerate_param('ReportTypeList.Type.', types))
         return self.make_request(data)
+
+
+
+    def get_report_list_dict(self,params):
+        data = {'Action': 'GetReportList'}
+
+        if params.has_key('ReportRequestIdList'):
+            data.update(self.enumerate_param('ReportRequestIdList.Id.', params['ReportRequestIdList']))
+            del params['ReportRequestIdList']
+
+        if params.has_key('ReportTypeList'):
+            data.update(self.enumerate_param('ReportTypeList.Type.', params['ReportTypeList']))
+            del params['ReportTypeList']
+
+        data.update(params)
+        return self.make_request(data)
+
 
     def get_report_list_by_next_token(self, token):
         data = dict(Action='GetReportListByNextToken', NextToken=token)
@@ -398,13 +417,14 @@ class Reports(MWS):
 class Orders(MWS):
     """ Amazon Orders API """
 
-    URI = "/Orders/2011-01-01"
-    VERSION = "2011-01-01"
-    NS = '{https://mws.amazonservices.com/Orders/2011-01-01}'
+    URI = "/Orders/2013-09-01"
+    VERSION = "2013-09-01"
+    NS = '{https://mws.amazonservices.com/Orders/2013-09-01}'
 
     def list_orders(self, marketplaceids, created_after=None, created_before=None, lastupdatedafter=None,
                     lastupdatedbefore=None, orderstatus=(), fulfillment_channels=(),
                     payment_methods=(), buyer_email=None, seller_orderid=None, max_results='100'):
+
 
         data = dict(Action='ListOrders',
                     CreatedAfter=created_after,
@@ -415,11 +435,42 @@ class Orders(MWS):
                     SellerOrderId=seller_orderid,
                     MaxResultsPerPage=max_results,
                     )
+
+
         data.update(self.enumerate_param('OrderStatus.Status.', orderstatus))
         data.update(self.enumerate_param('MarketplaceId.Id.', marketplaceids))
         data.update(self.enumerate_param('FulfillmentChannel.Channel.', fulfillment_channels))
         data.update(self.enumerate_param('PaymentMethod.Method.', payment_methods))
+        raise Warning(data)
         return self.make_request(data)
+
+
+
+    def list_orders_dict(self, params):
+        data = { 'Action':'ListOrders'}
+        data.update(params)
+
+        if params.has_key('OrderStatus'):
+            data.update(self.enumerate_param('OrderStatus.Status.', params['OrderStatus']))
+            del data['OrderStatus']
+
+        if params.has_key('MarketplaceId'):
+            data.update(self.enumerate_param('MarketplaceId.Id.', params['MarketplaceId']))
+            del data['MarketplaceId']
+
+        if params.has_key('FulfillmentChannel'):
+            data.update(self.enumerate_param('FulfillmentChannel.Channel.', params['FulfillmentChannel']))
+
+            del data['FulfillmentChannel']
+
+        if params.has_key('PaymentMethod'):
+            data.update(self.enumerate_param('PaymentMethod.Method.', params['PaymentMethod']))
+            del data['PaymentMethod']
+
+        return self.make_request(data)
+
+
+
 
     def list_orders_by_next_token(self, token):
         data = dict(Action='ListOrdersByNextToken', NextToken=token)
